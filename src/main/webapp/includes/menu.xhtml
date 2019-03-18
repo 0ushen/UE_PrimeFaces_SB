@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui" xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <ul class="sidebar-menu tree" data-widget="tree">
+        
+        <li>
+            <p:link outcome="/index" onclick="clearBreadCrumbs()">
+                <i class="fa fa-home"></i>
+                <span>Home</span>
+            </p:link>
+        </li>
+        <li class="header">
+            General
+        </li>
+        <li>
+            <p:link outcome="/person">
+                <i class="fa fa-user"></i>
+                <span>Person</span>
+            </p:link>
+        </li>
+        <li>
+            <p:link outcome="/section">
+                <i class="fa fa-columns"></i>
+                <span>Section</span>
+            </p:link>
+        </li>
+        <li>
+            <p:link outcome="/ue">
+                <i class="fa fa-book"></i>
+                <span>UE</span>
+            </p:link>
+        </li>
+        <li>
+            <p:link outcome="/organizedUe">
+                <i class="fa fa-tasks"></i>
+                <span>Organized Ue</span>
+            </p:link>
+        </li>
+        <li>
+            <p:link outcome="/planning">
+                <i class="fa fa-calendar"></i>
+                <span>Planning</span>
+            </p:link>
+        </li>
+
+    </ul>
+
+</ui:composition>

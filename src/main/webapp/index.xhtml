@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="#{layoutMB.template}">
+
+    <ui:param name="renderBreadCrumb" value="false"/>
+
+    <ui:define name="title">
+        <p:tabView>
+            
+            <p:tab title="Introduction">
+                <h2 class="align-center">
+                    Welcome to my <i><a href="https://github.com/0ushen/UE_PrimeFaces_SB" target="_blank" class="link-color"> School Project!</a></i>
+                </h2>
+                <br/>
+                
+                <p>This app is a user interface which can manage our school database.</p>
+                <br/>
+                <p>More specifically, it can search, add, update or delete :</p>
+                <ul>
+                    <li>A person (be it a student, a teacher or school staff).</li>
+                    <li>A section.</li>
+                    <li>A teaching unit (or "unité d'enseignement" in french -> UE).</li>
+                    <li>A capacity belonging to a teaching unit.</li>
+                    <li>An organized UE which represent the program of a teaching unit for a an academic year.</li>
+                    <li>A planning item which means a session of a teaching unit.</li>
+                </ul>
+                <br/>
+
+                <p>It was developped using the following technologies : </p>
+                <ul>
+                    <li> 
+                        <i><a href="https://www.primefaces.org/" target="_blank" class="link-color">PrimeFaces</a></i> (JSF Framework) with the  
+                        <i><a href="https://github.com/adminfaces/admin-template" target="_blank" class="link-color">Admin Template</a></i>  to create the user interface.
+                    </li>
+                    <li>JAVA as the main programming language, with a few frameworks :
+                        <ul>
+                            <li>JSF/PrimeFaces for UI components and client-server communication.</li>
+                            <li>JPA to manage data from the database.</li>
+                            <li><i><a href="https://jersey.github.io/" target="_blank" class="link-color">Jersey</a></i>  to build the API.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <i><a href="https://swagger.io/" target="_blank" class="link-color">Swagger</a></i>  to generate the API documentation (<i><a href="https://github.com/swagger-api/swagger-core/wiki/swagger-core-jersey-1.x-project-setup-1.5" target="_blank" class="link-color">Swagger core</a></i>) and to display it on this website (<i><a href="https://swagger.io/tools/swagger-ui/" target="_blank" class="link-color">Swagger UI</a></i>) .
+                    </li>
+                    <li>PostgreSQL as the database management system.</li>
+                    <li>Netbeans for the development environment.</li>
+                </ul>
+            </p:tab>
+            
+            <p:tab title="API documentation">
+                <div id="swagger-ui"></div>
+
+                <script>
+                window.onload = function() {
+                  const ui = SwaggerUIBundle({
+                    url: "http://localhost:8080/admin-starter/webresources/swagger.json",
+                    dom_id: '#swagger-ui',
+                    presets: [
+                      SwaggerUIBundle.presets.apis,
+                      SwaggerUIStandalonePreset
+                    ]
+                  })
+
+                  window.ui = ui
+                }
+                </script>
+            </p:tab>
+            
+            <p:tab title="Bugs">
+                <h2 class="align-center">Bugs:</h2>
+                <br/>
+                <ul>
+                    <li>
+                        I can't change a boolean value twice in a row on the same view. It happens only
+                        when trying to change the value in the datable cell directly.
+                    </li>
+                    <br/>
+                    <li>
+                        Button "columns" will do nothing if a row has been selected at least once in the
+                        same view.
+                    </li>
+                    <br/>
+                    <li>
+                        Bug with modal dialogs on small screens (when menu bar is toggled off automatically).
+                        My work around was to set all dialogs on "non-modal"
+                    </li>
+                    <br/>
+                    <li>
+                        I can't edit a cell in capacityTable in ue view.
+                    </li>
+                    <br/>
+                    <li>
+                        Various bugs due to the columntoggler, this solution is nice but in a more serious
+                        application i would do without it.
+                    </li>
+                    <br/>
+                    <li>
+                        I can't create a new Organized UE with one or many teacher in its teacherList.
+                        I can't add a teacher to an existing organized UE.
+                        But i can remove a teacher from an existing organized UE.
+                    </li>
+                </ul>
+            </p:tab>
+        </p:tabView>
+        
+
+    </ui:define>
+
+
+</ui:composition>

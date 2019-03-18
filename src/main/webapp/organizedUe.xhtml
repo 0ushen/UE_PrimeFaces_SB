@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core" xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:adm="http://github.com/adminfaces"
+                template="#{layoutMB.template}"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
+    
+    <ui:define name="metadata">
+        <ui:param name="title" value="Organized UE management"/> <!-- Automatic create breadCrumb and page title when param 'title' is provided. --> 
+    </ui:define>
+
+    <ui:define name="description">
+        Find , add, update or delete an organizedUE
+    </ui:define>
+
+    <ui:define name="body">
+        <h:form id="form">
+            <!--<p:growl id="msgs" showDetail="true"/>!-->
+            
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <div id="main-buttons" class="ui-g">
+                        <p:commandButton update="newOrganizedUeForm" icon="fa fa-plus"
+                                         value="New" styleClass="btn-primary ui-g-12 ui-md-3 ui-lg-2"
+                                         oncomplete="PF('newOrganizedUeDialog').show()"
+                                         />
+                        <p:spacer width="5"/>
+                        <p:commandButton value="View/Edit" update="selectedOrganizedUeForm" styleClass="btn-info ui-g-12 ui-md-3 ui-lg-2"
+                                         disabled="#{empty organizedUeController.selectedOrganizedUes or organizedUeController.selectedOrganizedUes.size() != 1}"
+                                         oncomplete="PF('selectedOrganizedUeDialog').show()" icon="fa fa-search fa-edit"
+                                         />
+                        <p:spacer width="5"/>
+                        <p:commandButton value="Delete" icon="fa fa-trash" styleClass="btn-danger ui-g-12 ui-md-3 ui-lg-2"
+                                         disabled="#{empty organizedUeController.selectedOrganizedUes or organizedUeController.selectedOrganizedUes.size() == 0}"
+                                         process="@this" actionListener="#{organizedUeController.delete}" update="@form"/>
+                        <p:spacer width="5"/>
+                    </div>
+
+                    <p:separator/>
+                    
+                    <p:dataTable id="organizedUeTable" var="o" value="#{organizedUeController.organizedUeList}" editable="true"
+                                 widgetVar="organizedUeTable"
+                                 editMode="cell" paginator="true" rows="10"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                 rowsPerPageTemplate="5,10,15"
+                                 sortMode="multiple" emptyMessage="No Organized ues found with given criteria" filteredValue="#{organizedUeController.filteredOrganizedUes}"
+                                 selection="#{organizedUeController.selectedOrganizedUes}" rowKey="#{o.organizedUeId}">
+                        <p:ajax event="cellEdit" listener="#{organizedUeController.onCellEdit}" />
+                        <p:ajax event="rowSelectCheckbox" listener="#{organizedUeController.onRowSelectCheckbox}" update="@(.ui-button, .ui-confirm-dialog)"/>
+                        <p:ajax event="rowUnselectCheckbox" listener="#{organizedUeController.onRowUnselectCheckbox}" update="@(.ui-button, .ui-confirm-dialog)"/>
+                        
+                        <f:facet name="header">
+                            <div class="ui-g">
+                                <div class="ui-g-12 ui-md-4 ui-lg-3 ui-xl-3">
+                                    <h:outputLabel for="sectionFilter" value="Section : "/>
+                                    <p:selectOneMenu id="sectionFilter" value="#{organizedUeController.selectedSection}" styleClass="custom-filter">
+                                        <f:selectItem itemLabel="All sections" itemValue="#{null}" noSelectionOption="true" />
+                                        <f:selectItems value="#{sectionController.sectionList}" var="section" itemLabel="#{section.name}"/>
+                                        <p:ajax update="organizedUeTable" listener="#{organizedUeController.customFilter}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="ui-g-12 ui-md-4 ui-lg-3 ui-xl-3">
+                                    <h:outputLabel for="yearFilter" value="Year : "/>
+                                    <p:selectOneMenu id="yearFilter" value="#{organizedUeController.selectedYear}" styleClass="custom-filter">
+                                        <f:selectItem itemLabel="All years" itemValue="#{null}" noSelectionOption="true" />
+                                        <f:selectItems value="#{organizedUeController.existingAcademicYearsSet}" var="ay" itemLabel="#{ay.name}" itemValue="#{ay.year}"/>
+                                        <p:ajax update="organizedUeTable" listener="#{organizedUeController.customFilter}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="ui-g-12 ui-md-4 ui-lg-3 ui-xl-3">
+                                    <p:commandButton id="copyButton" value="Copy to next year" process="@this" actionListener="#{organizedUeController.copyToNextYear()}" update="organizedUeTable"
+                                                     disabled="#{organizedUeController.selectedSection == null || organizedUeController.selectedYear == null}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-4 ui-lg-3 ui-xl-3">
+                                    <p:outputPanel id="tooltipdiv" style="float: right;">
+                                        <p:commandButton id="toggler" value="Columns" icon="pi pi-align-justify"/>
+                                        <p:columnToggler datasource="organizedUeTable" trigger="toggler">
+                                            <p:ajax event="toggle" listener="#{organizedUeController.onToggle}" />
+                                        </p:columnToggler>
+                                        <p:tooltip id="toolTipFade" for="tooltipdiv" value="If this button doesn't work refresh the page"/>
+                                    </p:outputPanel>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        
+                        <p:column selectionMode="multiple" style="width:36px;text-align:center" priority="1" visible="#{organizedUeController.visibleColumnsList[0]}"/>
+
+                        <p:column headerText="Name" sortBy="#{o.name}" filterBy="#{o.name}" filterMatchMode="contains" priority="1" visible="#{organizedUeController.visibleColumnsList[1]}">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{o.name}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{o.name}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                       <p:column headerText="UE" filterBy="#{o.ue.name}" filterMatchMode="contains" style="text-align:center;margin-right:5px;" priority="1" visible="#{organizedUeController.visibleColumnsList[2]}">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{o.ue.name}" />
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectOneMenu value="#{o.ue}" converter="#{UeControllerConverter}">
+                                        <f:selectItem itemLabel="Select One" itemValue="" />
+                                        <f:selectItems value="#{ueController.itemsAvailableSelectOne}" var="ue" itemLabel="#{ue.name}"/>
+                                    </p:selectOneMenu>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="Level" filterBy="#{o.level.name}" filterMatchMode="contains" style="text-align:center;margin-right:5px;" priority="1" visible="#{organizedUeController.visibleColumnsList[3]}">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{o.level.name}" />
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectOneMenu value="#{o.level}" converter="#{LevelControllerConverter}">
+                                        <f:selectItem itemLabel="Select One" itemValue="" />
+                                        <f:selectItems value="#{levelController.itemsAvailableSelectOne}" var="level" itemLabel="#{level.name}"/>
+                                    </p:selectOneMenu>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="Start date" sortBy="#{o.startDate}" filterBy="#{organizedUeController.customFormatDate(o.startDate)}" filterMatchMode="contains" priority="2" visible="#{organizedUeController.visibleColumnsList[4]}">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{o.startDate}">
+                                        <f:convertDateTime type="date" dateStyle="short" pattern="dd/MM/yyyy"/>
+                                    </h:outputText>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:calendar value="#{o.startDate}" pattern="dd/MM/yyyy" mask="true" style="width:96%"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="End date" sortBy="#{o.endDate}" filterBy="#{organizedUeController.customFormatDate(o.endDate)}" filterMatchMode="contains" priority="2" visible="#{organizedUeController.visibleColumnsList[5]}">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{o.endDate}">
+                                        <f:convertDateTime type="date" dateStyle="short" pattern="dd/MM/yyyy"/>
+                                    </h:outputText>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:calendar value="#{o.endDate}" pattern="dd/MM/yyyy" mask="true" style="width:96%"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                    </p:dataTable>
+                </div>
+            </div>
+        </h:form>
+        
+        <p:dialog header="New OrganizedUe" widgetVar="newOrganizedUeDialog" modal="false" width="80%" class="newDialog">
+            <h:form id="newOrganizedUeForm">
+                <p:panel id="newOrganizedUePanel" header="Create a new UE" style="margin-bottom:20px">
+                    <div class="ui-g">
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Name : *" for="newOrganizedUeName"></h:outputLabel>
+                            <p:inputText id="newOrganizedUeName" value="#{organizedUeController.organizedUe.name}" required="true" requiredMessage="name is required." styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="UE : *" for="newOrganizedUeUe"/>
+                            <p:selectOneMenu id="newOrganizedUeUe" value="#{organizedUeController.organizedUe.ue}" converter="#{UeControllerConverter}">
+                                <f:selectItem itemLabel="Select One" itemValue="" />
+                                <f:selectItems value="#{ueController.itemsAvailableSelectOne}" var="ue" itemLabel="#{ue.name}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Level : *" for="newOrganizedUeLevel"/>
+                            <p:selectOneMenu id="newOrganizedUeLevel" value="#{organizedUeController.organizedUe.level}" converter="#{LevelControllerConverter}">
+                                <f:selectItem itemLabel="Select One" itemValue="" />
+                                <f:selectItems value="#{levelController.itemsAvailableSelectOne}" var="level" itemLabel="#{level.name}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="ui-g-6 ui-md-3 ui-lg-3 ui-xl-3">
+                            <h:outputLabel value="Start date : *" for="newOrganizedUeStartDate"></h:outputLabel>
+                            <p:calendar id="newOrganizedUeStartDate" value="#{organizedUeController.organizedUe.startDate}" pattern="dd/MM/yyyy" mask="true" />
+                        </div>
+                        <div class="ui-g-6 ui-md-3 ui-lg-3 ui-xl-3">
+                            <h:outputLabel value="End date : *" for="newOrganizedUeEndDate"></h:outputLabel>
+                            <p:calendar id="newOrganizedUeEndDate" value="#{organizedUeController.organizedUe.endDate}" pattern="dd/MM/yyyy" mask="true" />
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Teachers : *" for="newOrganizedUeTeachers"/>
+                            <p:selectManyMenu id="newOrganizedUeTeachers" value="#{organizedUeController.organizedUe.teacherList}" converter="#{PersonControllerConverter}" showCheckbox="true">
+                                <f:selectItems value="#{personController.itemsAvailableSelectOneTeacher}" var="teacher" itemLabel="#{teacher.lastName}"/>
+                            </p:selectManyMenu>
+                        </div>
+                    </div>
+                    <p:spacer width="5"/>
+                    <div class="ui-g">
+                        <p:commandButton id="btnAdd" styleClass="btn-primary ui-g-6 ui-md-3 ui-lg-3 ui-xl-3" value="Add" icon="fa fa-plus"
+                                          oncomplete="PF('newOrganizedUeDialog').hide()" update=":form:organizedUeTable" process=":newOrganizedUeForm" actionListener="#{organizedUeController.create}"/>
+                    </div>
+                </p:panel>
+            </h:form>
+        </p:dialog>
+        
+        <p:dialog header="Selected OrganizedUe" widgetVar="selectedOrganizedUeDialog" resizable="false" width="80%" class="selectedDialog">
+            <h:form id="selectedOrganizedUeForm">
+                <p:panel id="selectedOrganizedUePanel" rendered="#{organizedUeController.selectedOrganizedUes.size() == 1}" styleClass="customPanel">
+                    <f:facet name="header">
+                        #{organizedUeController.selectedOrganizedUe.name}
+                    </f:facet>
+                    <div class="ui-g">
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Name : *" for="selectedOrganizedUeName"></h:outputLabel>
+                            <p:inputText id="selectedOrganizedUeName" value="#{organizedUeController.selectedOrganizedUe.name}" required="true" requiredMessage="name is required." styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="UE : *" for="selectedOrganizedUeUe"/>
+                            <p:selectOneMenu id="selectedOrganizedUeUe" value="#{organizedUeController.selectedOrganizedUe.ue}" converter="#{UeControllerConverter}">
+                                <f:selectItem itemLabel="Select One" itemValue="" />
+                                <f:selectItems value="#{ueController.itemsAvailableSelectOne}" var="ue" itemLabel="#{ue.name}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Level : *" for="selectedOrganizedUeLevel"/>
+                            <p:selectOneMenu id="selectedOrganizedUeLevel" value="#{organizedUeController.selectedOrganizedUe.level}" converter="#{LevelControllerConverter}">
+                                <f:selectItem itemLabel="Select One" itemValue="" />
+                                <f:selectItems value="#{levelController.itemsAvailableSelectOne}" var="level" itemLabel="#{level.name}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="ui-g-6 ui-md-3 ui-lg-3 ui-xl-3">
+                            <h:outputLabel value="Start date : *" for="selectedOrganizedUeStartDate"></h:outputLabel>
+                            <p:calendar id="selectedOrganizedUeStartDate" value="#{organizedUeController.selectedOrganizedUe.startDate}" pattern="dd/MM/yyyy" mask="true"/>
+                        </div>
+                        <div class="ui-g-6 ui-md-3 ui-lg-3 ui-xl-3">
+                            <h:outputLabel value="End date : *" for="selectedOrganizedUeEndDate"></h:outputLabel>
+                            <p:calendar id="selectedOrganizedUeEndDate" value="#{organizedUeController.selectedOrganizedUe.endDate}" pattern="dd/MM/yyyy" mask="true"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Teachers : *" for="selectedOrganizedUeTeachers"/>
+                            <p:selectManyMenu id="electedOrganizedUeTeachers" value="#{organizedUeController.selectedOrganizedUe.teacherList}" converter="#{PersonControllerConverter}" showCheckbox="true">
+                                <f:selectItems value="#{personController.itemsAvailableSelectOneTeacher}" var="teacher" itemLabel="#{teacher.lastName}"/>
+                            </p:selectManyMenu>
+                        </div>
+                    </div>
+                    <p:spacer width="5"/>
+                    <div class="ui-g">
+                        <p:commandButton id="btnEdit" styleClass="btn-warning ui-g-6 ui-md-3 ui-lg-3 ui-xl-3" value="Edit" icon="fa fa-edit"
+                                         oncomplete="PF('selectedOrganizedUeDialog').hide()" update=":form:organizedUeTable" process="@form" actionListener="#{organizedUeController.update}"/>
+                    </div>
+                </p:panel>
+            </h:form>
+        </p:dialog>
+
+
+
+    </ui:define>
+
+</ui:composition>

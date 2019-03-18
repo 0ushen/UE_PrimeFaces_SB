@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Planning management</title>
+        <style type="text/css">
+            .value {
+                width: 1000px;
+            }
+        </style>        
+    </h:head>
+    <h:body>
+        <h:form>
+            <p:growl id="messages" showDetail="true" />
+            
+            <div class="ui-g">
+                <div class="ui-g-12 ui-md-4 ui-lg-2 ui-xl-2">
+                    <h:outputLabel for="sectionFilter" value="Section : "/>
+                    <p:selectOneMenu id="sectionFilter" value="#{planningController.selectedSection}" styleClass="custom-filter">
+                        <f:selectItem itemLabel="All sections" itemValue="#{null}" noSelectionOption="true" />
+                        <f:selectItems value="#{sectionController.itemsAvailableSelectOne}" var="section" itemLabel="#{section.name}"/>
+                    </p:selectOneMenu>
+                </div>
+                <div class="ui-g-12 ui-md-4 ui-lg-2 ui-xl-2">
+                    <h:outputLabel for="yearFilter" value="Year : "/>
+                    <p:selectOneMenu id="yearFilter" value="#{planningController.selectedYear}" styleClass="custom-filter">
+                        <f:selectItem itemLabel="All years" itemValue="#{null}" noSelectionOption="true" />
+                        <f:selectItems value="#{organizedUeController.existingAcademicYearsSet}" var="ay" itemLabel="#{ay.name}" itemValue="#{ay.year}"/>
+                    </p:selectOneMenu>
+                </div>
+                <div class="ui-g-12 ui-md-4 ui-lg-2 ui-xl-2">
+                    <h:outputLabel for="levelFilter" value="Level : "/>
+                    <p:selectOneMenu id="levelFilter" value="#{planningController.selectedLevel}" styleClass="custom-filter">
+                        <f:selectItem itemLabel="All levels" itemValue="#{null}" noSelectionOption="true" />
+                        <f:selectItems value="#{levelController.itemsAvailableSelectOne}" var="level" itemLabel="#{level.name}" itemValue="#{level}"/>
+                    </p:selectOneMenu>
+                </div>
+                <div class="ui-g-12 ui-md-4 ui-lg-2 ui-xl-2">
+                    <p:commandButton id="filterButton" value="filter" 
+                                     action="#{planningController.customFilter()}" oncomplete="PF('myschedule').update();"/>
+                </div>
+            </div>
+            
+            <h:panelGrid columnClasses="value">
+                <h3 style="margin-top: 0">Editable Schedule</h3>
+                <p:schedule id="schedule" value="#{planningController.eventModel}" widgetVar="myschedule" timeZone="GMT+1" draggable="false">
+
+                    <p:ajax event="dateSelect" listener="#{planningController.onDateSelect}" update="newEventDetails" oncomplete="PF('newEventDialog').show();" />
+                    <p:ajax event="eventSelect" listener="#{planningController.onEventSelect}" update="selectEventDetails" oncomplete="PF('selectEventDialog').show();" />
+                </p:schedule>
+
+            </h:panelGrid>
+
+            <p:dialog widgetVar="newEventDialog" header="Event Details">
+                <h:panelGrid id="newEventDetails" columns="2">
+                    <p:outputLabel for="newEventTitle" value="Title:" />
+                    <p:selectOneMenu id="newEventTitle" value="#{planningController.planning.organizedUe}" converter="#{OrganizedUeControllerConverter}" styleClass="custom-filter">
+                        <f:selectItem itemLabel="Select One" itemValue="#{null}" noSelectionOption="true" />
+                        <f:selectItems value="#{organizedUeController.itemsAvailableSelectOne}" var="o" itemLabel="#{o.name}" itemValue="#{o}"/>
+                    </p:selectOneMenu>
+                    
+                    <p:outputLabel for="newEventDay" value="Day:" />
+                    <p:calendar id="newEventDay" value="#{planningController.planning.seanceDate}" timeZone="GMT+1" pattern="dd/MM/yyyy"/>
+                    
+                    <p:outputLabel for="newEventStartTime" value="From:" />
+                    <p:calendar id="newEventStartTime" value="#{planningController.planning.startHour}" timeZone="GMT+1" pattern="HH:mm"/>
+
+                    <p:outputLabel for="newEventRoom" value="Room: "/>
+                    <p:inputText id="newEventRoom" value="#{planningController.planning.room}" />
+
+                    <p:outputLabel for="newEventTeacher" value="Teacher:" />
+                    <p:selectOneMenu id="newEventTeacher" value="#{planningController.planning.teacher}" converter="#{PersonControllerConverter}" styleClass="custom-filter">
+                        <f:selectItem itemLabel="Select One" itemValue="#{null}" noSelectionOption="true" />
+                        <f:selectItems value="#{personController.itemsAvailableSelectOneTeacher}" var="teacher" itemLabel="#{teacher.lastName}" itemValue="#{teacher}"/>
+                    </p:selectOneMenu>
+                    
+                    <p:commandButton type="reset" value="Reset" />
+                    <p:commandButton id="addButton" value="Save" action="#{planningController.create}" oncomplete="PF('myschedule').update();PF('newEventDialog').hide();" />
+                </h:panelGrid>
+            </p:dialog>    
+            
+            <p:dialog widgetVar="selectEventDialog" header="Event Details">
+                <h:panelGrid id="selectEventDetails" columns="2">
+                    <p:outputLabel for="selectEventTitle" value="Title:" />
+                    <p:selectOneMenu id="selectEventTitle" value="#{planningController.selectedPlanning.organizedUe}" converter="#{OrganizedUeControllerConverter}" styleClass="custom-filter">
+                        <f:selectItem itemLabel="Select One" itemValue="#{null}" noSelectionOption="true" />
+                        <f:selectItems value="#{organizedUeController.itemsAvailableSelectOne}" var="o" itemLabel="#{o.name}" itemValue="#{o}"/>
+                    </p:selectOneMenu>
+                    
+                    <p:outputLabel for="selectEventDay" value="Day:" />
+                    <p:calendar id="selectEventDay" value="#{planningController.selectedPlanning.seanceDate}" pattern="dd/MM/yyyy"/>
+                    
+                    <p:outputLabel for="selectEventStartTime" value="From:" />
+                    <p:calendar id="selectEventStartTime" value="#{planningController.selectedPlanning.startHour}" pattern="HH:mm"/>
+
+                    <p:outputLabel for="selectEventRoom" value="Room: "/>
+                    <p:inputText id="selectEventRoom" value="#{planningController.selectedPlanning.room}" />
+
+                    <p:outputLabel for="selectEventTeacher" value="Teacher:" />
+                    <p:selectOneMenu id="selectEventTeacher" value="#{planningController.selectedPlanning.teacher}" converter="#{PersonControllerConverter}" styleClass="custom-filter">
+                        <f:selectItem itemLabel="Select One" itemValue="#{null}" noSelectionOption="true" />
+                        <f:selectItems value="#{personController.itemsAvailableSelectOneTeacher}" var="teacher" itemLabel="#{teacher.lastName}" itemValue="#{teacher}"/>
+                    </p:selectOneMenu>
+                    
+                    <p:commandButton id="updateButton" value="Save" class="btn btn-primary" action="#{planningController.update}" oncomplete="PF('myschedule').update();PF('selectEventDialog').hide();" />
+                    <p:commandButton id="deleteButton" value="Delete" class="btn btn-danger" action="#{planningController.delete}" oncomplete="PF('myschedule').update();PF('selectEventDialog').hide();"/>
+                </h:panelGrid>
+            </p:dialog>    
+            
+        </h:form>
+    </h:body>
+</html>

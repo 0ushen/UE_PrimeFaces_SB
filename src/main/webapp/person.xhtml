@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core" xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:adm="http://github.com/adminfaces"
+                template="#{layoutMB.template}">
+    
+    <ui:define name="metadata">
+        <ui:param name="title" value="Person listing"/> <!-- Automatic create breadCrumb and page title when param 'title' is provided. --> 
+        
+    </ui:define>
+
+    <ui:define name="description">
+        Find , add, update or delete a person
+    </ui:define>
+
+    <ui:define name="body">
+        <h:form id="form">
+            <!--<p:growl id="msgs" showDetail="true"/>!-->
+            
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <div id="main-buttons" class="ui-g">
+                        <p:commandButton update=":newPersonForm" icon="fa fa-plus"
+                                         value="New" styleClass="btn-primary ui-g-12 ui-md-3 ui-lg-2"
+                                         oncomplete="PF('newPersonDialog').show()"
+                                         />
+                        <p:spacer width="5"/>
+                        <p:commandButton value="View/Edit" update=":selectedPersonForm" styleClass="btn-info ui-g-12 ui-md-3 ui-lg-2"
+                                         disabled="#{empty personController.selectedPersons or personController.selectedPersons.size() != 1}"
+                                         oncomplete="PF('selectedPersonDialog').show()" icon="fa fa-search fa-edit"
+                                         />
+                        <p:spacer width="5"/>
+                        <p:commandButton value="Delete" icon="fa fa-trash" styleClass="btn-danger ui-g-12 ui-md-3 ui-lg-2"
+                                         disabled="#{empty personController.selectedPersons or personController.selectedPersons.size() == 0}"
+                                         process="@this" action="#{personController.delete}" update="@form"/>
+                        <p:spacer width="5"/>
+                    </div>
+
+                    <p:separator/>
+                    
+                    <p:dataTable id="personTable" var="p" value="#{personController.personList}" editable="true"
+                                 widgetVar="personTable"
+                                 editMode="cell" paginator="true" rows="10"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                 rowsPerPageTemplate="5,10,15"
+                                 sortMode="multiple" emptyMessage="No persons found with given criteria" filteredValue="#{personController.filteredPersons}"
+                                 selection="#{personController.selectedPersons}" rowKey="#{p.personId}">
+                        <p:ajax event="cellEdit" listener="#{personController.onCellEdit}" />
+                        <p:ajax event="rowSelectCheckbox" update="@(.ui-button, .ui-confirm-dialog)"/>
+                        <p:ajax event="rowUnselectCheckbox" update="@(.ui-button, .ui-confirm-dialog)"/>
+                        <p:ajax event="rowSelect" update="@(.ui-button, .ui-confirm-dialog)"/>
+                        <p:ajax event="rowUnselect" update="@(.ui-button, .ui-confirm-dialog)"/>
+                        
+                        <f:facet name="header">
+                            <p:outputPanel id="tooltipdiv" style="float: right;">
+                                <p:commandButton id="toggler" value="Columns" icon="pi pi-align-justify"/>
+                                <p:columnToggler datasource="personTable" trigger="toggler">
+                                    <p:ajax event="toggle" listener="#{personController.onToggle}" />
+                                </p:columnToggler>
+                                <p:tooltip id="toolTipFade" for="tooltipdiv" value="If this button doesn't work refresh the page"/>
+                            </p:outputPanel>
+                        </f:facet>
+                        
+                        <p:column selectionMode="multiple" style="width:36px;text-align:center" priority="1" visible="#{personController.visibleColumnsList[0]}"/>
+
+                        <p:column headerText="Lastname" sortBy="#{p.lastName}" filterBy="#{p.lastName}" filterMatchMode="contains" priority="1" visible="#{personController.visibleColumnsList[1]}">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{p.lastName}"/></f:facet>
+                                <f:facet name="input"><p:inputText value="#{p.lastName}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Firstname" sortBy="#{p.firstName}" filterBy="#{p.firstName}" filterMatchMode="contains" priority="1" visible="#{personController.visibleColumnsList[2]}">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{p.firstName}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{p.firstName}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Email" sortBy="#{p.email}" filterBy="#{p.email}" filterMatchMode="contains" style="white-space:nowrap" priority="2" visible="#{personController.visibleColumnsList[3]}">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{p.email}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{p.email}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="Mobile" sortBy="#{p.mobile}" filterBy="#{p.mobile}" filterMatchMode="contains" priority="2" visible="#{personController.visibleColumnsList[4]}">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{p.mobile}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{p.mobile}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="DoB" sortBy="#{p.dateOfBirth}" filterBy="#{personController.customFormatDate(p.dateOfBirth)}" filterMatchMode="contains" priority="3" visible="#{personController.visibleColumnsList[5]}">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{p.dateOfBirth}">
+                                        <f:convertDateTime type="date" dateStyle="short" pattern="dd/MM/yyyy"/>
+                                    </h:outputText>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:calendar value="#{p.dateOfBirth}" pattern="dd/MM/yyyy" mask="true" style="width:96%"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="Country" sortBy="#{p.country}" filterBy="#{p.country}" filterMatchMode="contains" priority="4" visible="#{personController.visibleColumnsList[6]}">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{p.country}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{p.country}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="City" sortBy="#{p.city}" filterBy="#{p.city}" filterMatchMode="contains" priority="4" visible="#{personController.visibleColumnsList[7]}">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{p.city}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{p.city}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="PC" sortBy="#{p.postalCode}" filterBy="#{p.postalCode}" filterMatchMode="contains" priority="4" visible="#{personController.visibleColumnsList[8]}">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{p.postalCode}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{p.postalCode}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="Address" sortBy="#{p.address}" filterBy="#{p.address}" filterMatchMode="contains" style="white-space:nowrap" priority="4" visible="#{personController.visibleColumnsList[9]}">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{p.address}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{p.address}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="Teacher" filterBy="#{p.isTeacher}" filterMatchMode="equals" style="width:65px;text-align:center" priority="1" visible="#{personController.visibleColumnsList[10]}">
+                            <f:facet name="filter">
+                                <p:selectOneMenu onchange="PF('personTable').filter()" styleClass="custom-filter">
+                                    <f:converter converterId="javax.faces.Boolean" />
+                                    <f:selectItem itemLabel="All" itemValue="" />
+                                    <f:selectItem itemLabel="Yes" itemValue="true" />
+                                    <f:selectItem itemLabel="No" itemValue="false" />
+                                </p:selectOneMenu>
+                            </f:facet>
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText rendered="#{!p.isTeacher}" styleClass="fa fa-close"/>
+                                    <h:outputText rendered="#{p.isTeacher}" styleClass="fa fa-check"/>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectBooleanCheckbox value="#{p.isTeacher}" style="width:96%"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+            </div>
+        </h:form>
+        
+        <p:dialog widgetVar="newPersonDialog" modal="false" width="80%">
+            <h:form id="newPersonForm">
+                <p:panel id="newPersonPanel" header="Create a new person" style="margin-bottom:20px">
+                    <div class="ui-g">
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Lastname : *" for="newPersonLastName"></h:outputLabel>
+                            <p:inputText id="newPersonLastName" value="#{personController.person.lastName}" required="true" requiredMessage="Lastname is required." styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Firstname : *" for="newPersonFirstName"></h:outputLabel>
+                            <p:inputText id="newPersonFirstName" value="#{personController.person.firstName}" required="true" requiredMessage="Firstname is required." styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Email : *" for="newPersonEmail"></h:outputLabel>
+                            <p:inputText id="newPersonEmail" value="#{personController.person.email}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-6 ui-md-3 ui-lg-3 ui-xl-3">
+                            <h:outputLabel value="Mobile : *" for="newPersonMobile"></h:outputLabel>
+                            <p:inputText id="newPersonMobile" value="#{personController.person.mobile}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-6 ui-md-3 ui-lg-3 ui-xl-3">
+                            <h:outputLabel value="Date of birth : *" for="newPersonDateOfBirth"></h:outputLabel>
+                            <p:calendar id="newPersonDateOfBirth" value="#{personController.person.dateOfBirth}" pattern="dd/MM/yyyy" mask="true"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Country : *" for="newPersonCountry"></h:outputLabel>
+                            <p:inputText id="newPersonCountry" value="#{personController.person.country}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="City : *" for="newPersonCity"></h:outputLabel>
+                            <p:inputText id="newPersonCity" value="#{personController.person.city}" styleClass="form-control"/>
+                        </div>
+                         <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Address : *" for="newPersonAddress"></h:outputLabel>
+                            <p:inputText id="newPersonAddress" value="#{personController.person.address}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-6 ui-md-3 ui-lg-3 ui-xl-3">
+                            <h:outputLabel value="Postal code : *" for="newPersonPostalCode"></h:outputLabel>
+                            <p:inputText id="newPersonPostalCode" value="#{personController.person.postalCode}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-6 ui-md-3 ui-lg-3 ui-xl-3">
+                            <h:outputLabel value="Teacher : *" for="newPersonIsTeacher"></h:outputLabel>
+                            <p:selectOneMenu id="newPersonIsTeacher" value="#{personController.person.isTeacher}">
+                                <f:converter converterId="javax.faces.Boolean" />
+                                <f:selectItem itemLabel="No" itemValue="false" />
+                                <f:selectItem itemLabel="Yes" itemValue="true" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <p:spacer width="5"/>
+                    <div class="ui-g">
+                        <p:commandButton id="btnAdd" styleClass="btn-primary ui-g-6 ui-md-3 ui-lg-3 ui-xl-3" value="Add" icon="fa fa-plus"
+                                          oncomplete="PF('newPersonDialog').hide()" update=":form:personTable" process=":newPersonForm" action="#{personController.create()}"/>
+                    </div>
+                </p:panel>
+            </h:form>
+        </p:dialog>
+        
+        <p:dialog header="Selected Person" widgetVar="selectedPersonDialog" showEffect="fade" hideEffect="fade" resizable="false" width="80%">
+            <h:form id="selectedPersonForm">
+                <p:panel id="selectedPersonPanel" rendered="#{personController.selectedPersons.size() == 1}" header="#{personController.selectedPersons.get(0).lastName}" style="margin-bottom:20px" styleClass="customPanel">
+                    <div class="ui-g">
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Lastname : *" for="selectedPersonLastName"></h:outputLabel>
+                            <p:inputText id="selectedPersonLastName" value="#{personController.selectedPersons.get(0).lastName}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Firstname : *" for="selectedPersonFirstName"></h:outputLabel>
+                            <p:inputText id="selectedPersonFirstName" value="#{personController.selectedPersons.get(0).firstName}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Email : *" for="selectedPersonEmail"></h:outputLabel>
+                            <p:inputText id="selectedPersonEmail" value="#{personController.selectedPersons.get(0).email}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-6 ui-md-3 ui-lg-3 ui-xl-3">
+                            <h:outputLabel value="Mobile : *" for="selectedPersonMobile"></h:outputLabel>
+                            <p:inputText id="selectedPersonMobile" value="#{personController.selectedPersons.get(0).mobile}"  styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-6 ui-md-3 ui-lg-3 ui-xl-3">
+                            <h:outputLabel value="Date of birth : *" for="selectedPersonDateOfBirth"></h:outputLabel>
+                            <p:calendar id="selectedPersonDateOfBirth" value="#{personController.selectedPersons.get(0).dateOfBirth}" pattern="dd/MM/yyyy" mask="true"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Country : *" for="selectedPersonCountry"></h:outputLabel>
+                            <p:inputText id="selectedPersonCountry" value="#{personController.selectedPersons.get(0).country}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="City : *" for="selectedPersonCity"></h:outputLabel>
+                            <p:inputText id="selectedPersonCity" value="#{personController.selectedPersons.get(0).city}" styleClass="form-control"/>
+                        </div>
+                         <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Address : *" for="selectedPersonAddress"></h:outputLabel>
+                            <p:inputText id="selectedPersonAddress" value="#{personController.selectedPersons.get(0).address}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-6 ui-md-3 ui-lg-3 ui-xl-3">
+                            <h:outputLabel value="Postal code : *" for="selectedPersonPostalCode"></h:outputLabel>
+                            <p:inputText id="selectedPersonPostalCode" value="#{personController.selectedPersons.get(0).postalCode}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-6 ui-md-3 ui-lg-3 ui-xl-3">
+                            <h:outputLabel value="Teacher : *" for="selectedPersonIsTeacher"></h:outputLabel>
+                            <p:selectOneMenu id="selectedPersonIsTeacher" value="#{personController.selectedPersons.get(0).isTeacher}">
+                                <f:converter converterId="javax.faces.Boolean" />
+                                <f:selectItem itemLabel="No" itemValue="false" />
+                                <f:selectItem itemLabel="Yes" itemValue="true" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <p:spacer width="5"/>
+                    <div class="ui-g">
+                        <p:commandButton id="btnEdit" styleClass="btn-warning ui-g-6 ui-md-3 ui-lg-3 ui-xl-3" value="Edit" icon="fa fa-edit"
+                                         oncomplete="PF('selectedPersonDialog').hide()" update=":form:personTable" process="@form" action="#{personController.update}"/>
+                    </div>
+                </p:panel>
+            </h:form>
+        </p:dialog>
+
+
+
+    </ui:define>
+
+</ui:composition>
+

@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core" xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:adm="http://github.com/adminfaces"
+                template="#{layoutMB.template}"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
+    
+    <ui:define name="metadata">
+        <ui:param name="title" value="UE listing"/> <!-- Automatic create breadCrumb and page title when param 'title' is provided. --> 
+    </ui:define>
+
+    <ui:define name="description">
+        Find , add, update or delete an UE
+    </ui:define>
+
+    <ui:define name="body">
+        <h:form id="form">
+            <!--<p:growl id="msgs" showDetail="true"/>!-->
+            
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <div id="main-buttons" class="ui-g">
+                        <p:commandButton update="newUeForm" icon="fa fa-plus"
+                                         value="New" styleClass="btn-primary ui-g-12 ui-md-3 ui-lg-2"
+                                         oncomplete="PF('newUeDialog').show()"
+                                         />
+                        <p:spacer width="5"/>
+                        <p:commandButton value="View/Edit" update="selectedUeForm" styleClass="btn-info ui-g-12 ui-md-3 ui-lg-2"
+                                         disabled="#{empty ueController.selectedUes or ueController.selectedUes.size() != 1}"
+                                         oncomplete="PF('selectedUeDialog').show()" icon="fa fa-search fa-edit"
+                                         />
+                        <p:spacer width="5"/>
+                        <p:commandButton value="Delete" icon="fa fa-trash" styleClass="btn-danger ui-g-12 ui-md-3 ui-lg-2"
+                                         disabled="#{empty ueController.selectedUes or ueController.selectedUes.size() == 0}"
+                                         process="@this" actionListener="#{ueController.delete}" update="@form"/>
+                        <p:spacer width="5"/>
+                    </div>
+
+                    <p:separator/>
+                    
+                    <p:dataTable id="ueTable" var="u" value="#{ueController.ueList}" editable="true"
+                                 widgetVar="ueTable"
+                                 editMode="cell" paginator="true" rows="10"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                 rowsPerPageTemplate="5,10,15"
+                                 sortMode="multiple" emptyMessage="No ues found with given criteria" filteredValue="#{ueController.filteredUes}"
+                                 selection="#{ueController.selectedUes}" rowKey="#{u.ueId}">
+                        <p:ajax event="cellEdit" listener="#{ueController.onCellEdit}" />
+                        <p:ajax event="rowSelectCheckbox" listener="#{ueController.onRowSelectCheckbox}" update="@(.ui-button, .ui-confirm-dialog)"/>
+                        <p:ajax event="rowUnselectCheckbox" listener="#{ueController.onRowUnselectCheckbox}" update="@(.ui-button, .ui-confirm-dialog)"/>
+                        
+                        <f:facet name="header">
+                            <p:outputPanel id="tooltipdiv" style="float: right;">
+                                <p:commandButton id="toggler" value="Columns" icon="pi pi-align-justify"/>
+                                <p:columnToggler datasource="ueTable" trigger="toggler">
+                                    <p:ajax event="toggle" listener="#{ueController.onToggle}" />
+                                </p:columnToggler>
+                                <p:tooltip id="toolTipFade" for="tooltipdiv" value="If this button doesn't work refresh the page"/>
+                            </p:outputPanel>
+                        </f:facet>
+                        
+                        <p:column selectionMode="multiple" style="width:36px;text-align:center" priority="1" visible="#{ueController.visibleColumnsList[0]}"/>
+
+                        <p:column headerText="Name" sortBy="#{u.name}" filterBy="#{u.name}" filterMatchMode="contains" priority="1" visible="#{ueController.visibleColumnsList[1]}">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{u.name}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{u.name}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Description" sortBy="#{u.description}" filterBy="#{u.description}" filterMatchMode="contains" priority="3" visible="#{ueController.visibleColumnsList[2]}">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{u.description}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{u.description}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="Section" filterBy="#{u.section.name}" filterMatchMode="contains" style="width:160px;text-align:center;margin-right:5px;" priority="1" visible="#{ueController.visibleColumnsList[3]}">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <f:facet name="output"><h:outputText value="#{u.section.name}" /></f:facet>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectOneMenu value="#{u.section}" converter="#{SectionControllerConverter}">
+                                        <f:selectItem itemLabel="Select One" itemValue="" />
+                                        <f:selectItems value="#{sectionController.itemsAvailableSelectOne}" var="section" itemLabel="#{section.name}"/>
+                                    </p:selectOneMenu>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="Code" sortBy="#{u.code}" filterBy="#{u.code}" filterMatchMode="contains" priority="2" visible="#{ueController.visibleColumnsList[4]}" style="width:72px;text-align:center">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{u.code}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{u.code}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="Periods" sortBy="#{u.numOfPeriods}" filterBy="#{u.numOfPeriods}" filterMatchMode="contains" priority="2" visible="#{ueController.visibleColumnsList[5]}" style="width:72px;text-align:center">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{u.numOfPeriods}" /></f:facet>
+                                <f:facet name="input"><input type="number" id="numOfPeriods" jsf:value="#{u.numOfPeriods}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="Decisive" filterBy="#{u.isDecisive}" filterMatchMode="equals" style="width:65px;text-align:center" priority="1" visible="#{ueController.visibleColumnsList[6]}">
+                            <f:facet name="filter">
+                                <p:selectOneMenu onchange="PF('ueTable').filter()" styleClass="custom-filter">
+                                    <f:converter converterId="javax.faces.Boolean" />
+                                    <f:selectItem itemLabel="All" itemValue="" />
+                                    <f:selectItem itemLabel="Yes" itemValue="true" />
+                                    <f:selectItem itemLabel="No" itemValue="false" />
+                                </p:selectOneMenu>
+                            </f:facet>
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText rendered="#{!u.isDecisive}" styleClass="fa fa-close"/>
+                                    <h:outputText rendered="#{u.isDecisive}" styleClass="fa fa-check"/>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectBooleanCheckbox value="#{u.isDecisive}" style="width:96%"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+            </div>
+        </h:form>
+        
+        <p:dialog header="New Ue" widgetVar="newUeDialog" modal="false" width="80%" class="newDialog">
+            <h:form id="newUeForm">
+                <p:panel id="newUePanel" header="Create a new UE" style="margin-bottom:20px">
+                    <div class="ui-g">
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Name : *" for="newUeName"></h:outputLabel>
+                            <p:inputText id="newUeName" value="#{ueController.ue.name}" required="true" requiredMessage="name is required." styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Section : *" for="newUeSection"/>
+                            <p:selectOneMenu id="newUeSection" value="#{ueController.ue.section}" converter="#{SectionControllerConverter}">
+                                <f:selectItem itemLabel="Select One" itemValue="" />
+                                <f:selectItems value="#{sectionController.itemsAvailableSelectOne}" var="section" itemLabel="#{section.name}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="ui-g-12 ui-md-12 ui-lg-12 ui-xl-12">
+                            <h:outputLabel value="Description : *" for="newUeDescription"></h:outputLabel>
+                            <p:inputTextarea id="newUeDescription" value="#{ueController.ue.description}" required="true" requiredMessage="description is required." styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-4 ui-lg-4 ui-xl-4">
+                            <h:outputLabel value="Code : *" for="newUeCode"></h:outputLabel>
+                            <p:inputText id="newUeCode" value="#{ueController.ue.code}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-4 ui-lg-4 ui-xl-4">
+                            <h:outputLabel value="Periods : *" for="newUeNumOfPeriods"></h:outputLabel>
+                            <input type="number" id="newUeNumOfPeriods" jsf:value="#{ueController.ue.numOfPeriods}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-6 ui-md-4 ui-lg-4 ui-xl-4">
+                            <h:outputLabel value="Decisive : *" for="newUeIsDecisive"></h:outputLabel>
+                            <p:selectOneMenu id="newUeIsDecisive" value="#{ueController.ue.isDecisive}">
+                                <f:converter converterId="javax.faces.Boolean" />
+                                <f:selectItem itemLabel="No" itemValue="false" />
+                                <f:selectItem itemLabel="Yes" itemValue="true" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <p:spacer width="5"/>
+                    <div class="ui-g">
+                        <p:commandButton id="btnAdd" styleClass="btn-primary ui-g-6 ui-md-3 ui-lg-3 ui-xl-3" value="Add" icon="fa fa-plus"
+                                          oncomplete="PF('newUeDialog').hide()" update=":form:ueTable" process=":newUeForm" actionListener="#{ueController.create}"/>
+                    </div>
+                </p:panel>
+            </h:form>
+        </p:dialog>
+        
+        <p:dialog header="Selected Ue" widgetVar="selectedUeDialog" resizable="false" width="80%" class="selectedDialog">
+            <h:form id="selectedUeForm">
+                <p:panel id="selectedUePanel" rendered="#{ueController.selectedUes.size() == 1}" styleClass="customPanel">
+                    <f:facet name="header">
+                        #{ueController.selectedUe.name}
+                    </f:facet>
+                    <div class="ui-g">
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Name : *" for="selectedUeName"></h:outputLabel>
+                            <p:inputText id="selectedUeName" value="#{ueController.selectedUe.name}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Section : *" for="selectedUeSection"></h:outputLabel>
+                            <p:selectOneMenu id="selectedUeSection" value="#{ueController.selectedUe.section}" converter="#{SectionControllerConverter}">
+                                <f:selectItem itemLabel="Select One" itemValue="" />
+                                <f:selectItems value="#{sectionController.itemsAvailableSelectOne}" var="section" itemLabel="#{section.name}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="ui-g-12 ui-md-12 ui-lg-12 ui-xl-12">
+                            <h:outputLabel value="Description : *" for="selectedUeDescription"></h:outputLabel>
+                            <p:inputTextarea id="selectedUeDescription" value="#{ueController.selectedUe.description}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-6 ui-md-4 ui-lg-4 ui-xl-4">
+                            <h:outputLabel value="Code : *" for="selectedUeCode"></h:outputLabel>
+                            <p:inputText id="selectedUeCode" value="#{ueController.selectedUe.code}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-6 ui-md-4 ui-lg-4 ui-xl-4">
+                            <h:outputLabel value="Periods : *" for="selectedUeNumOfPeriods"></h:outputLabel>
+                            <input type="number" id="selectedUeNumOfPeriods" jsf:value="#{ueController.selectedUe.numOfPeriods}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-4 ui-lg-4 ui-xl-4">
+                            <h:outputLabel value="Decisive : *" for="selectedUeIsDecisive"></h:outputLabel>
+                            <p:selectOneMenu id="selectedUeIsDecisive" value="#{ueController.selectedUe.isDecisive}">
+                                <f:converter converterId="javax.faces.Boolean" />
+                                <f:selectItem itemLabel="No" itemValue="false" />
+                                <f:selectItem itemLabel="Yes" itemValue="true" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <p:spacer width="5"/>
+                    <div class="ui-g">
+                        <p:commandButton id="btnEdit" styleClass="btn-warning ui-g-6 ui-md-3 ui-lg-3 ui-xl-3" value="Edit" icon="fa fa-edit"
+                                         oncomplete="PF('selectedUeDialog').hide()" update=":form:ueTable" process="@form" actionListener="#{ueController.update}"/>
+                    </div>
+                    <p:spacer width="5"/>
+                    <p:dataTable id="capacityTable" var="c" value="#{ueController.capacityList}" 
+                                 widgetVar="capacityTable" rowKey="#{c.capacityId}"
+                                 editable="true" editMode="cell"
+                                 selection="#{ueController.selectedCapacities}">
+                        
+                        <p:ajax event="cellEdit" listener="#{ueController.onCellEditCapacity}" />
+                        <p:ajax event="rowSelectCheckbox" update=":selectedUeForm:deleteCapacityButton"/>
+                        <p:ajax event="rowUnselectCheckbox" update=":selectedUeForm:deleteCapacityButton"/>
+                        
+                        <f:facet name="header">
+                            Capacities of #{ueController.selectedUe.name}
+                        </f:facet>
+                        
+                        <p:column selectionMode="multiple" style="width:36px;text-align:center" priority="1"/>
+
+                        <p:column headerText="Name" priority="1">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{c.name}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{c.name}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Description" priority="2">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{c.description}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{c.description}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="ToS" style="width:65px;text-align:center" priority="1">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText rendered="#{!c.isThresholdOfSuccess}" styleClass="fa fa-close"/>
+                                    <h:outputText rendered="#{c.isThresholdOfSuccess}" styleClass="fa fa-check"/>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectBooleanCheckbox value="#{c.isThresholdOfSuccess}" style="width:96%"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                    </p:dataTable>
+                    <p:spacer width="5"/>
+                    <p:outputPanel id="capacityInputPanel">
+                        <p:panel header="New capacity" rendered="#{!ueController.isHidden}">
+                            <div class="ui-g">
+                                <div class="ui-g-12 ui-md-5 ui-lg-5 ui-xl-5">
+                                    <h:outputLabel value="Name : *" for="newCapacityName"></h:outputLabel>
+                                    <p:inputText id="newCapacityName" value="#{ueController.capacity.name}" styleClass="form-control"/>
+                                </div>
+                                <div class="ui-g-12 ui-md-5 ui-lg-5 ui-xl-5">
+                                    <h:outputLabel value="Description : *" for="newCapacityDescription"></h:outputLabel>
+                                    <p:inputText id="newCapacityDescription" value="#{ueController.capacity.description}" styleClass="form-control"/>
+                                </div>
+                                <div class="ui-g-12 ui-md-2 ui-lg-2 ui-xl-2">
+                                    <h:outputLabel value="ToS : *" for="newCapacityisThresholdOfSuccess"></h:outputLabel>
+                                    <p:selectOneMenu id="newCapacityisThresholdOfSuccess" value="#{ueController.capacity.isThresholdOfSuccess}">
+                                        <f:converter converterId="javax.faces.Boolean" />
+                                        <f:selectItem itemLabel="No" itemValue="false" />
+                                        <f:selectItem itemLabel="Yes" itemValue="true" />
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="ui-g-12">
+                                    <p:commandButton id="newCapacityOKButton" value="OK" styleClass="btn-success ui-g-12 ui-md-2 ui-lg-2" 
+                                                     process="capacityInputPanel" actionListener="#{ueController.createCapacity()}" update="@form">
+                                    </p:commandButton>
+                                    <p:spacer width="4"/>
+                                    <p:commandButton id="newCapacityCancelButton" actionListener="#{ueController.hideOrShow()}"  update="capacityInputPanel" value="Cancel" styleClass="btn-danger ui-g-12 ui-md-2 ui-lg-2"/>
+                                </div>
+                            </div>
+                        </p:panel>
+                    </p:outputPanel>
+                    <p:spacer width="5"/>
+                    <div class="ui-g">
+                        <p:commandButton id="newCapacityButton" icon="fa fa-plus" actionListener="#{ueController.hideOrShow()}"
+                                        value="New" styleClass="btn-primary ui-g-12 ui-md-3 ui-lg-3" update="capacityInputPanel"/>
+                        <p:spacer width="5"/>
+                        <p:commandButton id="deleteCapacityButton" value="Delete" icon="fa fa-trash" styleClass="btn-danger ui-g-12 ui-md-3 ui-lg-3"
+                                        disabled="#{empty ueController.selectedCapacities or ueController.selectedCapacities.size() == 0}"
+                                        process="@this" actionListener="#{ueController.deleteCapacity()}" update=":selectedUeForm:capacityTable" />
+                    </div>
+                </p:panel>
+            </h:form>
+        </p:dialog>
+
+
+
+    </ui:define>
+
+</ui:composition>

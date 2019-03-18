@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core" xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:adm="http://github.com/adminfaces"
+                template="#{layoutMB.template}">
+    
+    <ui:define name="metadata">
+        <ui:param name="title" value="Section listing"/> <!-- Automatic create breadCrumb and page title when param 'title' is provided. --> 
+      
+    </ui:define>
+
+    <ui:define name="description">
+        Find , add, update or delete a section
+    </ui:define>
+
+    <ui:define name="body">
+        <h:form id="form">
+            <!--<p:growl id="msgs" showDetail="true"/>!-->
+            
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <div id="main-buttons" class="ui-g">
+                        <p:commandButton update=":newSectionForm" icon="fa fa-plus"
+                                         value="New" styleClass="btn-primary ui-g-12 ui-md-3 ui-lg-2"
+                                         oncomplete="PF('newSectionDialog').show()"
+                                         />
+                        <p:spacer width="5"/>
+                        <p:commandButton value="View/Edit" update=":selectedSectionForm" styleClass="btn-info ui-g-12 ui-md-3 ui-lg-2"
+                                         disabled="#{empty sectionController.selectedSections or sectionController.selectedSections.size() != 1}"
+                                         oncomplete="PF('selectedSectionDialog').show()" icon="fa fa-search fa-edit"
+                                         />
+                        <p:spacer width="5"/>
+                        <p:commandButton value="Delete" icon="fa fa-trash" styleClass="btn-danger ui-g-12 ui-md-3 ui-lg-2"
+                                         disabled="#{empty sectionController.selectedSections or sectionController.selectedSections.size() == 0}"
+                                         process="@this" action="#{sectionController.delete}" update="@form"/>
+                        <p:spacer width="5"/>
+                    </div>
+
+                    <p:separator/>
+                    
+                    <p:dataTable id="sectionTable" var="s" value="#{sectionController.sectionList}" editable="true"
+                                 widgetVar="sectionTable"
+                                 editMode="cell" paginator="true" rows="10"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                 rowsPerPageTemplate="5,10,15"
+                                 sortMode="multiple" emptyMessage="No persons found with given criteria" filteredValue="#{sectionController.filteredSections}"
+                                 selection="#{sectionController.selectedSections}" rowKey="#{s.sectionId}">
+                        <p:ajax event="cellEdit" listener="#{sectionController.onCellEdit}" />
+                        <p:ajax event="rowSelectCheckbox" update="@(.ui-button, .ui-confirm-dialog)"/>
+                        <p:ajax event="rowUnselectCheckbox" update="@(.ui-button, .ui-confirm-dialog)"/>
+                        <p:ajax event="rowSelect" update="@(.ui-button, .ui-confirm-dialog)"/>
+                        <p:ajax event="rowUnselect" update="@(.ui-button, .ui-confirm-dialog)"/>
+                        
+                        <f:facet name="header">
+                            <p:outputPanel id="tooltipdiv" style="float: right;">
+                                <p:commandButton id="toggler" value="Columns" icon="pi pi-align-justify"/>
+                                <p:columnToggler datasource="sectionTable" trigger="toggler">
+                                    <p:ajax event="toggle" listener="#{sectionController.onToggle}" />
+                                </p:columnToggler>
+                                <p:tooltip id="toolTipFade" for="tooltipdiv" value="If this button doesn't work refresh the page"/>
+                            </p:outputPanel>
+                        </f:facet>
+                        
+                        <p:column selectionMode="multiple" style="width:36px;text-align:center" priority="1" visible="#{sectionController.visibleColumnsList[0]}"/>
+
+                        <p:column headerText="Name" sortBy="#{s.name}" filterBy="#{s.name}" filterMatchMode="contains" priority="1" visible="#{sectionController.visibleColumnsList[1]}">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{s.name}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{s.name}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Description" sortBy="#{s.description}" filterBy="#{s.description}" filterMatchMode="contains" priority="2" visible="#{sectionController.visibleColumnsList[2]}">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{s.description}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{s.description}" style="width:96%"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        
+                        <p:column headerText="Teacher" filterBy="#{s.teacher}" filterMatchMode="contains" style="width:120px;text-align:center;margin-right:5px;" priority="1" visible="#{sectionController.visibleColumnsList[3]}">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <f:facet name="output"><h:outputText value="#{s.teacher.lastName}" /></f:facet>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectOneMenu value="#{s.teacher}" converter="#{PersonControllerConverter}">
+                                        <f:selectItem itemLabel="Select One" itemValue="" />
+                                        <f:selectItems value="#{personController.itemsAvailableSelectOneTeacher}" var="teacher" itemLabel="#{teacher.lastName}"/>
+                                    </p:selectOneMenu>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+            </div>
+        </h:form>
+        
+        <p:dialog widgetVar="newSectionDialog" modal="false" width="80%">
+            <h:form id="newSectionForm">
+                <p:panel id="newSectionPanel" header="Create a new section" style="margin-bottom:20px">
+                    <div class="ui-g">
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Name : *" for="newSectionName"></h:outputLabel>
+                            <p:inputText id="newSectionName" value="#{sectionController.section.name}" required="true" requiredMessage="name is required." styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Teacher : *" for="newSectionTeachersectionController.section.teacher}"/>
+                            <p:selectOneMenu id="newSectionTeacher" value="#{sectionController.section.teacher}" converter="#{PersonControllerConverter}">
+                                <f:selectItem itemLabel="Select One" itemValue="" />
+                                <f:selectItems value="#{personController.itemsAvailableSelectOneTeacher}" var="teacher" itemLabel="#{teacher.lastName}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="ui-g-12 ui-md-12 ui-lg-12 ui-xl-12">
+                            <h:outputLabel value="Description : *" for="newSectionFirstName"></h:outputLabel>
+                            <p:inputTextarea id="newSectionFirstName" value="#{sectionController.section.description}" required="true" requiredMessage="description is required." styleClass="form-control"/>
+                        </div>
+                    </div>
+                    <p:spacer width="5"/>
+                    <div class="ui-g">
+                        <p:commandButton id="btnAdd" styleClass="btn-primary ui-g-6 ui-md-3 ui-lg-3 ui-xl-3" value="Add" icon="fa fa-plus"
+                                          oncomplete="PF('newSectionDialog').hide()" update=":form:sectionTable" process=":newSectionForm" action="#{sectionController.create}"/>
+                    </div>
+                </p:panel>
+            </h:form>
+        </p:dialog>
+        
+        <p:dialog header="Selected Section" widgetVar="selectedSectionDialog" resizable="false" width="80%">
+            <h:form id="selectedSectionForm">
+                <p:panel id="selectedSectionPanel" rendered="#{sectionController.selectedSections.size() == 1}" header="#{sectionController.selectedSections.get(0).name}" style="margin-bottom:20px" styleClass="customPanel">
+                    <div class="ui-g">
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Name : *" for="selectedSectionName"></h:outputLabel>
+                            <p:inputText id="selectedSectionName" value="#{sectionController.selectedSections.get(0).name}" styleClass="form-control"/>
+                        </div>
+                        <div class="ui-g-12 ui-md-6 ui-lg-6 ui-xl-6">
+                            <h:outputLabel value="Teacher : *" for="selectedSectionTeacher"></h:outputLabel>
+                            <p:selectOneMenu id="selectedSectionTeacher" value="#{sectionController.selectedSections.get(0).teacher}" converter="#{PersonControllerConverter}">
+                                <f:selectItem itemLabel="Select One" itemValue="" />
+                                <f:selectItems value="#{personController.itemsAvailableSelectOneTeacher}" var="teacher" itemLabel="#{teacher.lastName}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="ui-g-12 ui-md-12 ui-lg-12 ui-xl-12">
+                            <h:outputLabel value="Description : *" for="selectedSectionDescription"></h:outputLabel>
+                            <p:inputTextarea id="selectedSectionDescription" value="#{sectionController.selectedSections.get(0).description}" styleClass="form-control"/>
+                        </div>
+                    </div>
+                    <p:spacer width="5"/>
+                    <div class="ui-g">
+                        <p:commandButton id="btnEdit" styleClass="btn-warning ui-g-6 ui-md-3 ui-lg-3 ui-xl-3" value="Edit" icon="fa fa-edit"
+                                         oncomplete="PF('selectedSectionDialog').hide()" update=":form:sectionTable" process="@form" action="#{sectionController.update}"/>
+                    </div>
+                </p:panel>
+            </h:form>
+        </p:dialog>
+
+
+
+    </ui:define>
+
+</ui:composition>
