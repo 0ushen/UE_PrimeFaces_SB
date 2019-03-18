@@ -1,5 +1,5 @@
 # UE_PrimeFaces_SB
-Database Management System using PrimeFaces and JPA
+Database Mangement System built using JSF(withPrimeFaces)/JPA/Jersey 
 
 <h3 class="text-center">Introduction</h3>
 <p>This app is a user interface which can manage our school database.</p>
