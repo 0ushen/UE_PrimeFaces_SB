@@ -22,7 +22,7 @@ import javax.ws.rs.core.MediaType;
 @Path("planning")
 public class PlanningFacadeREST extends AbstractFacade<Planning> {
 
-    @PersistenceContext(unitName = "com.github.adminfaces_admin-starter_war_0.1-SNAPSHOTPU")
+    @PersistenceContext(unitName = "UE_PrimeFaces_SB_PU")
     private EntityManager em;
 
     public PlanningFacadeREST() {

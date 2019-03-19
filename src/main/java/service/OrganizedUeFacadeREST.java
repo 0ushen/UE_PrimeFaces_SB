@@ -22,7 +22,7 @@ import javax.ws.rs.core.MediaType;
 @Path("organizedue")
 public class OrganizedUeFacadeREST extends AbstractFacade<OrganizedUe> {
 
-    @PersistenceContext(unitName = "com.github.adminfaces_admin-starter_war_0.1-SNAPSHOTPU")
+    @PersistenceContext(unitName = "UE_PrimeFaces_SB_PU")
     private EntityManager em;
 
     public OrganizedUeFacadeREST() {

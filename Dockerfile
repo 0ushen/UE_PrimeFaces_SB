@@ -1,2 +1,2 @@
 FROM airhacks/wildfly
-COPY ./target/admin-starter.war ${DEPLOYMENT_DIR}
+COPY ./target/UE_PrimeFaces_SB.war ${DEPLOYMENT_DIR}

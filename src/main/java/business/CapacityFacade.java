@@ -12,7 +12,7 @@ import javax.persistence.Query;
 @Stateless
 public class CapacityFacade extends AbstractFacade<Capacity> {
 
-    @PersistenceContext(unitName = "com.github.adminfaces_admin-starter_war_0.1-SNAPSHOTPU")
+    @PersistenceContext(unitName = "UE_PrimeFaces_SB_PU")
     private EntityManager em;
 
     @Override

@@ -25,7 +25,7 @@ import javax.ws.rs.core.MediaType;
 @Path("person")
 public class PersonFacadeREST extends AbstractFacade<Person> {
 
-    @PersistenceContext(unitName = "com.github.adminfaces_admin-starter_war_0.1-SNAPSHOTPU")
+    @PersistenceContext(unitName = "UE_PrimeFaces_SB_PU")
     private EntityManager em;
 
     public PersonFacadeREST() {

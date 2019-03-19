@@ -5,10 +5,10 @@
         xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.adminfaces</groupId>
-    <artifactId>admin_starter</artifactId>
+    <artifactId>UE_PrimeFaces_SB</artifactId>
     <version>0.1-SNAPSHOT</version>
     <packaging>war</packaging>
-    <name>admin_starter</name>
+    <name>UE_PrimeFaces_SB</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -147,13 +147,13 @@
                     <replacements>
                         <replacement>
                             <token>http://petstore.swagger.io/v2/swagger.json</token>
-                            <value>/admin-starter/webresources/swagger.json</value>
+                            <value>/UE_PrimeFaces_SB/webresources/swagger.json</value>
                         </replacement>
                     </replacements>
                 </configuration>
             </plugin>
         </plugins>
-        <finalName>admin-starter</finalName>
+        <finalName>UE_PrimeFaces_SB</finalName>
     </build>
     <profiles>
         <profile>

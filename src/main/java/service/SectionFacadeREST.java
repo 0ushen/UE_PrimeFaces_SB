@@ -30,7 +30,7 @@ import javax.ws.rs.core.MediaType;
 @Path("section")
 public class SectionFacadeREST extends AbstractFacade<Section> {
 
-    @PersistenceContext(unitName = "com.github.adminfaces_admin-starter_war_0.1-SNAPSHOTPU")
+    @PersistenceContext(unitName = "UE_PrimeFaces_SB_PU")
     private EntityManager em;
 
     public SectionFacadeREST() {
