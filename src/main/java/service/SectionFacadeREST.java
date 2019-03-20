@@ -26,7 +26,7 @@ import javax.ws.rs.core.MediaType;
  */
 
 @Stateless
-@Api(value = "section", description = "Operations about a section")
+@Api(value = "section")
 @Path("section")
 public class SectionFacadeREST extends AbstractFacade<Section> {
 
@@ -74,9 +74,18 @@ public class SectionFacadeREST extends AbstractFacade<Section> {
     @ApiOperation(value = "Find a specific section with multiple search fields", 
             notes = "Each field is optionnal. It returns a list of section matching the query.")
     public List<Section> findByEntity(
-            @ApiParam(value = "name of the section to search. works with substring matching.") @DefaultValue("") @QueryParam("name") String name,
-            @ApiParam(value = "keyword to match in the description of the section . works with substring matching.") @DefaultValue("") @QueryParam("description") String description, 
-            @ApiParam(value = "Id of the teacher responsable for this section") @DefaultValue("") @QueryParam("teacherId") Integer teacherId) {
+            @ApiParam(value = "name of the section to search. works with substring matching.") 
+            @DefaultValue("") 
+            @QueryParam("name") 
+                    String name,
+            @ApiParam(value = "keyword to match in the description of the section . works with substring matching.") 
+            @DefaultValue("") 
+            @QueryParam("description") 
+                    String description, 
+            @ApiParam(value = "Id of the teacher responsable for this section") 
+            @DefaultValue("") 
+            @QueryParam("teacherId") 
+                    Integer teacherId) {
         
                 
         String sQuery = "SELECT s FROM Section s WHERE ";
