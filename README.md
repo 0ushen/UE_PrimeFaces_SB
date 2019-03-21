@@ -1,5 +1,6 @@
 # UE_PrimeFaces_SB
 Database Mangement System built using JSF(withPrimeFaces)/JPA/Jersey 
+<i><a href="http://35.180.119.33:8080/UE_PrimeFaces_SB/index.jsf" target="_blank" class="link-color">Link to the application</a></i>
 
 <h3 class="text-center">Introduction</h3>
 <p>This app is a user interface which can manage our school database.</p>

@@ -12,8 +12,8 @@ public class ApplicationConfig extends Application {
         BeanConfig beanConfig = new BeanConfig();
         beanConfig.setVersion("1.0.0");
         beanConfig.setSchemes(new String[]{"http"});
-        beanConfig.setHost("localhost:8080");
-        beanConfig.setBasePath("/webresources");
+        beanConfig.setHost("35.180.119.33:8080");
+        beanConfig.setBasePath("/UE_PrimeFaces_SB/webresources");
         beanConfig.setResourcePackage(SectionFacadeREST.class.getPackage().getName());
         beanConfig.setScan(true);
     }
